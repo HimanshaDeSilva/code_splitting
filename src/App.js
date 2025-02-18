@@ -1,9 +1,25 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link, Outlet } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Outlet,
+} from "react-router-dom";
 import "./App.css";
-import Store from "./components/Store";
-import { About } from "./components/About";
-import Home from "./components/Home";
+// import Store from "./components/Store";
+// import { About } from "./components/About";
+// import Home from "./components/Home";
+
+//Code Splitting components- Lazy loaded component
+// const Home = lazy(() => import("./components/Home"));
+const Home = lazy(() => wait(1000).then(() => import("./components/Home"))); // To check loading message
+const Store = lazy(() => import("./components/Store")); // default function
+const About = lazy(() =>
+  import("./components/About").then((module) => {
+    return { default: module.About };
+  })
+); //named function. need to fix the error because of naming func
 
 function App() {
   return (
@@ -27,9 +43,17 @@ function NavWrapper() {
         <Link to="/store">Store</Link>
         <Link to="/about">About</Link>
       </nav>
-      <Outlet />
+      {/* Wrap Outlet with Suspense */}
+      <Suspense fallback={<h1>Loading...</h1>}>
+        <Outlet />
+      </Suspense>
     </>
   );
 }
 
+function wait(time) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}
 export default App;
